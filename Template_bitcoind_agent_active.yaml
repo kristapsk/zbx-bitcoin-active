@@ -1,0 +1,853 @@
+zabbix_export:
+  version: '7.4'
+  template_groups:
+    - uuid: 4abff66c37be497fb75bdce929c04e3e
+      name: Templates/Applications
+  templates:
+    - uuid: d67af95f877a43b7bced22df4378a045
+      template: 'bitcoind by Zabbix agent active'
+      name: 'bitcoind by Zabbix agent active'
+      groups:
+        - name: Templates/Applications
+      items:
+        - uuid: 75b66d9eb85b41e0b8a9e4c33e8871c6
+          name: 'Bitcoin: Estimated size of the block and undo files on disk'
+          type: DEPENDENT
+          key: bitcoin.blockchain.size_on_disk
+          units: B
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.blockchain.size_on_disk
+          master_item:
+            key: bitcoin.status
+          tags:
+            - tag: component
+              value: storage
+        - uuid: d5bc76a09d844015a5948031197d28ec
+          name: 'Bitcoin: Height of the most-work fully-validated chain'
+          type: DEPENDENT
+          key: bitcoin.blockchain.tip.blocks
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.blockchain.tip.blocks
+          master_item:
+            key: bitcoin.status
+          triggers:
+            - uuid: b63f986f65cb427fba12e0cb477d794d
+              expression: 'changecount(/bitcoind by Zabbix agent active/bitcoin.blockchain.tip.blocks,3h)=0'
+              name: 'Validated blockchain tip hasn''t changed for 3 hours'
+              priority: WARNING
+              manual_close: 'YES'
+        - uuid: 0dc938704263476d850538e83c54b3cb
+          name: 'Bitcoin: Current number of headers validated'
+          type: DEPENDENT
+          key: bitcoin.blockchain.tip.headers
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.blockchain.tip.headers
+          master_item:
+            key: bitcoin.status
+        - uuid: b846f4da21e047339c71acd4d181e888
+          name: 'Bitcoin: Estimate of blockchain verification progress'
+          type: DEPENDENT
+          key: bitcoin.blockchain.verificationprogress
+          value_type: FLOAT
+          units: '%'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.blockchain.verificationprogress
+            - type: MULTIPLIER
+              parameters:
+                - '100'
+          master_item:
+            key: bitcoin.status
+        - uuid: a7aff7709c2e4ccaa4a098141ad65baa
+          name: 'Bitcoin: Node connection count'
+          type: DEPENDENT
+          key: bitcoin.connections.num
+          description: 'Number of P2P connections to other nodes.'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.network.connections
+          master_item:
+            key: bitcoin.status
+          tags:
+            - tag: component
+              value: connections
+        - uuid: 2656a64ecc60481f8756a5843f145ae8
+          name: 'Bitcoin: Node incoming connection count'
+          type: DEPENDENT
+          key: bitcoin.connections_in.num
+          description: 'Number of P2P incoming connections from other nodes.'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.network.connections_in
+          master_item:
+            key: bitcoin.status
+          tags:
+            - tag: component
+              value: connections
+        - uuid: 5161fbb9c1104ee6be93ff42f2dd0534
+          name: 'Bitcoin: Node outgoing connection count'
+          type: DEPENDENT
+          key: bitcoin.connections_out.num
+          description: 'Number of P2P outgoing connections to other nodes.'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.network.connections_out
+          master_item:
+            key: bitcoin.status
+          tags:
+            - tag: component
+              value: connections
+        - uuid: 907efcd2b4da4aceb07e3cba5783a9e4
+          name: 'Bitcoin: Fee estimation for 1 block (10 minute) confirmation target'
+          type: DEPENDENT
+          key: 'bitcoin.estimatesmartfee[1]'
+          value_type: FLOAT
+          units: sat/vB
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.fees.estimatesmartfee_sat_vb[''1'']'
+          master_item:
+            key: bitcoin.status
+        - uuid: 860ad4d70de24d43a8822cb461d12eaf
+          name: 'Bitcoin: Fee estimation for 2 block (20 minute) confirmation target'
+          type: DEPENDENT
+          key: 'bitcoin.estimatesmartfee[2]'
+          value_type: FLOAT
+          units: sat/vB
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.fees.estimatesmartfee_sat_vb[''2'']'
+          master_item:
+            key: bitcoin.status
+        - uuid: bcbd83b07123407ca14b292c40704cc5
+          name: 'Bitcoin: Fee estimation for 3 block (30 minute) confirmation target'
+          type: DEPENDENT
+          key: 'bitcoin.estimatesmartfee[3]'
+          value_type: FLOAT
+          units: sat/vB
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.fees.estimatesmartfee_sat_vb[''3'']'
+          master_item:
+            key: bitcoin.status
+        - uuid: 5005d06177904ba696cb54c5b286d4a0
+          name: 'Bitcoin: Fee estimation for 4 block (40 minute) confirmation target'
+          type: DEPENDENT
+          key: 'bitcoin.estimatesmartfee[4]'
+          value_type: FLOAT
+          units: sat/vB
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.fees.estimatesmartfee_sat_vb[''4'']'
+          master_item:
+            key: bitcoin.status
+        - uuid: a2863f59d1864d429360bb301ef18985
+          name: 'Bitcoin: Fee estimation for 6 block (1 hour) confirmation target'
+          type: DEPENDENT
+          key: 'bitcoin.estimatesmartfee[6]'
+          value_type: FLOAT
+          units: sat/vB
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.fees.estimatesmartfee_sat_vb[''6'']'
+          master_item:
+            key: bitcoin.status
+        - uuid: 2a0979ce7d734873bcabc8f07ac30614
+          name: 'Bitcoin: Fee estimation for 12 block (2 hour) confirmation target'
+          type: DEPENDENT
+          key: 'bitcoin.estimatesmartfee[12]'
+          value_type: FLOAT
+          units: sat/vB
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.fees.estimatesmartfee_sat_vb[''12'']'
+          master_item:
+            key: bitcoin.status
+        - uuid: 420736eb45d44f2c8b6055b6d895d50f
+          name: 'Bitcoin: Fee estimation for 24 block (4 hour) confirmation target'
+          type: DEPENDENT
+          key: 'bitcoin.estimatesmartfee[24]'
+          value_type: FLOAT
+          units: sat/vB
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.fees.estimatesmartfee_sat_vb[''24'']'
+          master_item:
+            key: bitcoin.status
+        - uuid: 388b19e60ffa40bea818af1cb64eb63d
+          name: 'Bitcoin: Fee estimation for 48 block (8 hour) confirmation target'
+          type: DEPENDENT
+          key: 'bitcoin.estimatesmartfee[48]'
+          value_type: FLOAT
+          units: sat/vB
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.fees.estimatesmartfee_sat_vb[''48'']'
+          master_item:
+            key: bitcoin.status
+        - uuid: ccd1e6d9c9844fcdae6d3b11313166e4
+          name: 'Bitcoin: Fee estimation for 72 block (12 hour) confirmation target'
+          type: DEPENDENT
+          key: 'bitcoin.estimatesmartfee[72]'
+          value_type: FLOAT
+          units: sat/vB
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.fees.estimatesmartfee_sat_vb[''72'']'
+          master_item:
+            key: bitcoin.status
+        - uuid: d7b97dfba5c94b1a89cc1e6d86114195
+          name: 'Bitcoin: Fee estimation for 108 block (18 hour) confirmation target'
+          type: DEPENDENT
+          key: 'bitcoin.estimatesmartfee[108]'
+          value_type: FLOAT
+          units: sat/vB
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.fees.estimatesmartfee_sat_vb[''108'']'
+          master_item:
+            key: bitcoin.status
+        - uuid: ed4e3e2a5d6b428f8e1664dda5c4a644
+          name: 'Bitcoin: Fee estimation for 144 block (1 day) confirmation target'
+          type: DEPENDENT
+          key: 'bitcoin.estimatesmartfee[144]'
+          value_type: FLOAT
+          units: sat/vB
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.fees.estimatesmartfee_sat_vb[''144'']'
+          master_item:
+            key: bitcoin.status
+        - uuid: 3cd0ecf954d4413b9815f4f0c3ed9ca1
+          name: 'Bitcoin: Fee estimation for 504 block (3 day) confirmation target'
+          type: DEPENDENT
+          key: 'bitcoin.estimatesmartfee[504]'
+          value_type: FLOAT
+          units: sat/vB
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.fees.estimatesmartfee_sat_vb[''504'']'
+          master_item:
+            key: bitcoin.status
+        - uuid: dcfc7c17e24b49c6974ff0b2a3846b1a
+          name: 'Bitcoin: Fee estimation for 1008 block (1 week) confirmation target'
+          type: DEPENDENT
+          key: 'bitcoin.estimatesmartfee[1008]'
+          value_type: FLOAT
+          units: sat/vB
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.fees.estimatesmartfee_sat_vb[''1008'']'
+          master_item:
+            key: bitcoin.status
+        - uuid: f063da0336c8450d9b008b600e6b7774
+          name: 'Bitcoin: Cumulative size of mempool transactions in fee group 0-2 sat/vB'
+          type: DEPENDENT
+          key: 'bitcoin.mempool.fee_group_vbytes[0]'
+          units: vB
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.mempool.fee_histogram[''0''].sizes'
+          master_item:
+            key: bitcoin.status
+        - uuid: 2fbb5803a24b4015b50cd1f1c697803a
+          name: 'Bitcoin: Cumulative size of mempool transactions in fee group 2-3 sat/vB'
+          type: DEPENDENT
+          key: 'bitcoin.mempool.fee_group_vbytes[2]'
+          units: vB
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.mempool.fee_histogram[''2''].sizes'
+          master_item:
+            key: bitcoin.status
+        - uuid: 94f3611a07274938b187ad9b83fec24f
+          name: 'Bitcoin: Cumulative size of mempool transactions in fee group 3-4 sat/vB'
+          type: DEPENDENT
+          key: 'bitcoin.mempool.fee_group_vbytes[3]'
+          units: vB
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.mempool.fee_histogram[''3''].sizes'
+          master_item:
+            key: bitcoin.status
+        - uuid: 35fe75a982f743eba536df044f930959
+          name: 'Bitcoin: Cumulative size of mempool transactions in fee group 4-5 sat/vB'
+          type: DEPENDENT
+          key: 'bitcoin.mempool.fee_group_vbytes[4]'
+          units: vB
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.mempool.fee_histogram[''4''].sizes'
+          master_item:
+            key: bitcoin.status
+        - uuid: 799392aabe964c3d99614b3dbf8d8939
+          name: 'Bitcoin: Cumulative size of mempool transactions in fee group 5-6 sat/vB'
+          type: DEPENDENT
+          key: 'bitcoin.mempool.fee_group_vbytes[5]'
+          units: vB
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.mempool.fee_histogram[''5''].sizes'
+          master_item:
+            key: bitcoin.status
+        - uuid: e4b0d20045f544edaac3fd82fec10b6e
+          name: 'Bitcoin: Cumulative size of mempool transactions in fee group 6-7 sat/vB'
+          type: DEPENDENT
+          key: 'bitcoin.mempool.fee_group_vbytes[6]'
+          units: vB
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.mempool.fee_histogram[''6''].sizes'
+          master_item:
+            key: bitcoin.status
+        - uuid: 4220eb234cc34232811954aee2e1f91f
+          name: 'Bitcoin: Cumulative size of mempool transactions in fee group 7-8 sat/vB'
+          type: DEPENDENT
+          key: 'bitcoin.mempool.fee_group_vbytes[7]'
+          units: vB
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.mempool.fee_histogram[''7''].sizes'
+          master_item:
+            key: bitcoin.status
+        - uuid: d78ea3889ddc4de08d95fb7133bf2bcc
+          name: 'Bitcoin: Cumulative size of mempool transactions in fee group 8-10 sat/vB'
+          type: DEPENDENT
+          key: 'bitcoin.mempool.fee_group_vbytes[8]'
+          units: vB
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.mempool.fee_histogram[''8''].sizes'
+          master_item:
+            key: bitcoin.status
+        - uuid: 29f2504a57b740028bb885e3a5ce5a3c
+          name: 'Bitcoin: Cumulative size of mempool transactions in fee group 10-12 sat/vB'
+          type: DEPENDENT
+          key: 'bitcoin.mempool.fee_group_vbytes[10]'
+          units: vB
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.mempool.fee_histogram[''10''].sizes'
+          master_item:
+            key: bitcoin.status
+        - uuid: 0619d1b63faf4cccba99a99b3e1f0623
+          name: 'Bitcoin: Cumulative size of mempool transactions in fee group 12-14 sat/vB'
+          type: DEPENDENT
+          key: 'bitcoin.mempool.fee_group_vbytes[12]'
+          units: vB
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.mempool.fee_histogram[''12''].sizes'
+          master_item:
+            key: bitcoin.status
+        - uuid: 326dbfad7102445d9090d7c86c71373c
+          name: 'Bitcoin: Cumulative size of mempool transactions in fee group 14-17 sat/vB'
+          type: DEPENDENT
+          key: 'bitcoin.mempool.fee_group_vbytes[14]'
+          units: vB
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.mempool.fee_histogram[''14''].sizes'
+          master_item:
+            key: bitcoin.status
+        - uuid: 7adfa6db69ee4830b55626501394016b
+          name: 'Bitcoin: Cumulative size of mempool transactions in fee group 17-20 sat/vB'
+          type: DEPENDENT
+          key: 'bitcoin.mempool.fee_group_vbytes[17]'
+          units: vB
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.mempool.fee_histogram[''17''].sizes'
+          master_item:
+            key: bitcoin.status
+        - uuid: f0f55b428b494f17b40af993cb1876cf
+          name: 'Bitcoin: Cumulative size of mempool transactions in fee group 20-25 sat/vB'
+          type: DEPENDENT
+          key: 'bitcoin.mempool.fee_group_vbytes[20]'
+          units: vB
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.mempool.fee_histogram[''20''].sizes'
+          master_item:
+            key: bitcoin.status
+        - uuid: 5a1423d015824675a57e55c9fb4913fa
+          name: 'Bitcoin: Cumulative size of mempool transactions in fee group 25-30 sat/vB'
+          type: DEPENDENT
+          key: 'bitcoin.mempool.fee_group_vbytes[25]'
+          units: vB
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.mempool.fee_histogram[''25''].sizes'
+          master_item:
+            key: bitcoin.status
+        - uuid: 228c1836e8f44ac18b88ed8e3f1e1e3d
+          name: 'Bitcoin: Cumulative size of mempool transactions in fee group 30-40 sat/vB'
+          type: DEPENDENT
+          key: 'bitcoin.mempool.fee_group_vbytes[30]'
+          units: vB
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.mempool.fee_histogram[''30''].sizes'
+          master_item:
+            key: bitcoin.status
+        - uuid: 22d6aef174db4bafa134483379c6977c
+          name: 'Bitcoin: Cumulative size of mempool transactions in fee group 40-50 sat/vB'
+          type: DEPENDENT
+          key: 'bitcoin.mempool.fee_group_vbytes[40]'
+          units: vB
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.mempool.fee_histogram[''40''].sizes'
+          master_item:
+            key: bitcoin.status
+        - uuid: 94f0624f383a4532b80388e87ba8ff57
+          name: 'Bitcoin: Cumulative size of mempool transactions in fee group 50-60 sat/vB'
+          type: DEPENDENT
+          key: 'bitcoin.mempool.fee_group_vbytes[50]'
+          units: vB
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.mempool.fee_histogram[''50''].sizes'
+          master_item:
+            key: bitcoin.status
+        - uuid: c7d0bdcb274346cebbe7a55387ee9083
+          name: 'Bitcoin: Cumulative size of mempool transactions in fee group 60-70 sat/vB'
+          type: DEPENDENT
+          key: 'bitcoin.mempool.fee_group_vbytes[60]'
+          units: vB
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.mempool.fee_histogram[''60''].sizes'
+          master_item:
+            key: bitcoin.status
+        - uuid: fc27a2a44e374426a95ddf76b1e4a7b5
+          name: 'Bitcoin: Cumulative size of mempool transactions in fee group 70-80 sat/vB'
+          type: DEPENDENT
+          key: 'bitcoin.mempool.fee_group_vbytes[70]'
+          units: vB
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.mempool.fee_histogram[''70''].sizes'
+          master_item:
+            key: bitcoin.status
+        - uuid: 97a7dc0217664a7a943ffa53a5ff112c
+          name: 'Bitcoin: Cumulative size of mempool transactions in fee group 80-100 sat/vB'
+          type: DEPENDENT
+          key: 'bitcoin.mempool.fee_group_vbytes[80]'
+          units: vB
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.mempool.fee_histogram[''80''].sizes'
+          master_item:
+            key: bitcoin.status
+        - uuid: c7a2651f4e3f4fabb615e16c99e68171
+          name: 'Bitcoin: Cumulative size of mempool transactions in fee group 100-120 sat/vB'
+          type: DEPENDENT
+          key: 'bitcoin.mempool.fee_group_vbytes[100]'
+          units: vB
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.mempool.fee_histogram[''100''].sizes'
+          master_item:
+            key: bitcoin.status
+        - uuid: 901e30e0182743fab1e7719a6d322b50
+          name: 'Bitcoin: Cumulative size of mempool transactions in fee group 120-140 sat/vB'
+          type: DEPENDENT
+          key: 'bitcoin.mempool.fee_group_vbytes[120]'
+          units: vB
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.mempool.fee_histogram[''120''].sizes'
+          master_item:
+            key: bitcoin.status
+        - uuid: 600703152e8d4272a59d66fb27fa94bf
+          name: 'Bitcoin: Cumulative size of mempool transactions in fee group 140-170 sat/vB'
+          type: DEPENDENT
+          key: 'bitcoin.mempool.fee_group_vbytes[140]'
+          units: vB
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.mempool.fee_histogram[''140''].sizes'
+          master_item:
+            key: bitcoin.status
+        - uuid: 1576605103b84dc5aed1658268b53114
+          name: 'Bitcoin: Cumulative size of mempool transactions in fee group 170-200 sat/vB'
+          type: DEPENDENT
+          key: 'bitcoin.mempool.fee_group_vbytes[170]'
+          units: vB
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.mempool.fee_histogram[''170''].sizes'
+          master_item:
+            key: bitcoin.status
+        - uuid: d6ae6a0494514e42a6bf1d609d4655dc
+          name: 'Bitcoin: Cumulative size of mempool transactions in fee group 200-250 sat/vB'
+          type: DEPENDENT
+          key: 'bitcoin.mempool.fee_group_vbytes[200]'
+          units: vB
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.mempool.fee_histogram[''200''].sizes'
+          master_item:
+            key: bitcoin.status
+        - uuid: 02a95ce4e2da46c3ac92eae257733e18
+          name: 'Bitcoin: Cumulative size of mempool transactions in fee group 250-300 sat/vB'
+          type: DEPENDENT
+          key: 'bitcoin.mempool.fee_group_vbytes[250]'
+          units: vB
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.mempool.fee_histogram[''250''].sizes'
+          master_item:
+            key: bitcoin.status
+        - uuid: b6b8bc251e5242ef8533cad712ceeaed
+          name: 'Bitcoin: Cumulative size of mempool transactions in fee group 300-400 sat/vB'
+          type: DEPENDENT
+          key: 'bitcoin.mempool.fee_group_vbytes[300]'
+          units: vB
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.mempool.fee_histogram[''300''].sizes'
+          master_item:
+            key: bitcoin.status
+        - uuid: ef1867c3f173445793c0f750a73b5aa1
+          name: 'Bitcoin: Cumulative size of mempool transactions in fee group 400-500 sat/vB'
+          type: DEPENDENT
+          key: 'bitcoin.mempool.fee_group_vbytes[400]'
+          units: vB
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.mempool.fee_histogram[''400''].sizes'
+          master_item:
+            key: bitcoin.status
+        - uuid: bd1298ea3ec948269b71b6714583698c
+          name: 'Bitcoin: Cumulative size of mempool transactions in fee group 500-600 sat/vB'
+          type: DEPENDENT
+          key: 'bitcoin.mempool.fee_group_vbytes[500]'
+          units: vB
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.mempool.fee_histogram[''500''].sizes'
+          master_item:
+            key: bitcoin.status
+        - uuid: 37483ccf52464faa81304602832b3f56
+          name: 'Bitcoin: Cumulative size of mempool transactions in fee group 600+ sat/vB'
+          type: DEPENDENT
+          key: 'bitcoin.mempool.fee_group_vbytes[600]'
+          units: vB
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.mempool.fee_histogram[''600''].sizes'
+          master_item:
+            key: bitcoin.status
+        - uuid: 55116f38d1144cebb2eff0d882ef4a01
+          name: 'Bitcoin: Maximum memory usage for the mempool'
+          type: DEPENDENT
+          key: bitcoin.mempool.maxmempool_bytes
+          units: B
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.mempool.maxmempool_bytes
+          master_item:
+            key: bitcoin.status
+          tags:
+            - tag: component
+              value: memory
+        - uuid: f86786c2577f433c8f1da9e5c7b5425f
+          name: 'Bitcoin: Minimum relay fee for transactions'
+          type: DEPENDENT
+          key: bitcoin.mempool.mempoolminfee
+          value_type: FLOAT
+          units: sat/vB
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.mempool.mempoolminfee_sat_vb
+          master_item:
+            key: bitcoin.status
+        - uuid: 5ac23737e70c45a0a832ab034c4c2d4b
+          name: 'Bitcoin: Mempool size'
+          type: DEPENDENT
+          key: bitcoin.mempool.size_vbytes
+          units: vB
+          description: 'Sum of all virtual transaction sizes as defined in BIP 141. Differs from actual serialized size because witness data is discounted.'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.mempool.size_vbytes
+          master_item:
+            key: bitcoin.status
+        - uuid: ef0aaa40da03462089a320b60167b8db
+          name: 'Bitcoin: TX count in mempool'
+          type: DEPENDENT
+          key: bitcoin.mempool.tx_count
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.mempool.tx_count
+          master_item:
+            key: bitcoin.status
+        - uuid: 02276a9f53a64115b2d63b34a6d814f7
+          name: 'Bitcoin: Total memory usage for the mempool'
+          type: DEPENDENT
+          key: bitcoin.mempool.usage_bytes
+          units: B
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.mempool.usage_bytes
+          master_item:
+            key: bitcoin.status
+          tags:
+            - tag: component
+              value: memory
+        - uuid: f025b8c56afa4d5ab68a65651023f809
+          name: 'Bitcoin: Protocol version'
+          type: DEPENDENT
+          key: bitcoin.protocolversion
+          history: 365d
+          value_type: CHAR
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.network.protocolversion
+          master_item:
+            key: bitcoin.status
+          tags:
+            - tag: component
+              value: application
+          triggers:
+            - uuid: 4ed19d27fd79476eae4bd4aee2d87782
+              expression: 'last(/bitcoind by Zabbix agent active/bitcoin.protocolversion,#1)<>last(/bitcoind by Zabbix agent active/bitcoin.protocolversion,#2) and length(last(/bitcoind by Zabbix agent active/bitcoin.protocolversion))>0'
+              name: 'Bitcoin: Protocol version has changed'
+              priority: INFO
+              manual_close: 'YES'
+        - uuid: d48b86f5b92d47b68a541e4470b606c0
+          name: 'Bitcoin: Number of active RPC commands'
+          type: DEPENDENT
+          key: bitcoin.rpc.active_commands.num
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.rpc.active_commands
+          master_item:
+            key: bitcoin.status
+        - uuid: 3a66a0b0fdfb4068a503078a82e8af9e
+          name: 'Bitcoin: Status JSON (master)'
+          type: ZABBIX_ACTIVE
+          key: bitcoin.status
+          delay: 60s
+          value_type: TEXT
+          description: 'Master item that returns JSON from bitcoind for dependent items.'
+        - uuid: 4ba990c593a04371b19468f0898b8d09
+          name: 'Bitcoin: Server subversion string'
+          type: DEPENDENT
+          key: bitcoin.subversion
+          history: 365d
+          value_type: CHAR
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.network.subversion
+          master_item:
+            key: bitcoin.status
+          tags:
+            - tag: component
+              value: application
+          triggers:
+            - uuid: 8409dc18130b41e287beef74978f22e3
+              expression: 'last(/bitcoind by Zabbix agent active/bitcoin.subversion,#1)<>last(/bitcoind by Zabbix agent active/bitcoin.subversion,#2) and length(last(/bitcoind by Zabbix agent active/bitcoin.subversion))>0'
+              name: 'Bitcoin: Server subversion string has changed'
+              priority: INFO
+              manual_close: 'YES'
+        - uuid: ec287524ab974aab94f1d2fbecd50a77
+          name: 'Bitcoin: Server version'
+          type: DEPENDENT
+          key: bitcoin.version
+          history: 365d
+          value_type: CHAR
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.network.version
+          master_item:
+            key: bitcoin.status
+          tags:
+            - tag: component
+              value: application
+          triggers:
+            - uuid: 58b95ebf9f784028b3f791d482789994
+              expression: 'last(/bitcoind by Zabbix agent active/bitcoin.version,#1)<>last(/bitcoind by Zabbix agent active/bitcoin.version,#2) and length(last(/bitcoind by Zabbix agent active/bitcoin.version))>0'
+              name: 'Bitcoin: Server version has changed'
+              priority: INFO
+              manual_close: 'YES'
+      tags:
+        - tag: class
+          value: software
+        - tag: target
+          value: bitcoind
+      dashboards:
+        - uuid: 3bbee4d1ad944e799e3216799e2f96e1
+          name: 'Bitcoin Core performance'
+          pages:
+            - widgets:
+                - type: graph
+                  width: '36'
+                  height: '5'
+                  fields:
+                    - type: GRAPH
+                      name: graphid.0
+                      value:
+                        host: 'bitcoind by Zabbix agent active'
+                        name: 'Bitcoin: Blockchain'
+                    - type: STRING
+                      name: reference
+                      value: HKMFW
+                - type: graph
+                  'y': '5'
+                  width: '36'
+                  height: '5'
+                  fields:
+                    - type: GRAPH
+                      name: graphid.0
+                      value:
+                        host: 'bitcoind by Zabbix agent active'
+                        name: 'Bitcoin: Node connections'
+                    - type: STRING
+                      name: reference
+                      value: PUTBS
+                - type: graph
+                  x: '36'
+                  width: '36'
+                  height: '5'
+                  fields:
+                    - type: GRAPH
+                      name: graphid.0
+                      value:
+                        host: 'bitcoind by Zabbix agent active'
+                        name: 'Bitcoin: Mempool'
+                    - type: STRING
+                      name: reference
+                      value: RYKPU
+  graphs:
+    - uuid: 84af45ca2ebf4d06bc7bd21eb8365e2e
+      name: 'Bitcoin: Blockchain'
+      percent_right: '100'
+      graph_items:
+        - drawtype: FILLED_REGION
+          color: 199C0D
+          calc_fnc: ALL
+          item:
+            host: 'bitcoind by Zabbix agent active'
+            key: bitcoin.blockchain.size_on_disk
+        - sortorder: '1'
+          color: 00BFFF
+          yaxisside: RIGHT
+          calc_fnc: MAX
+          item:
+            host: 'bitcoind by Zabbix agent active'
+            key: bitcoin.blockchain.verificationprogress
+    - uuid: 68dea191bdeb4ecca2daaa4a0c165fb9
+      name: 'Bitcoin: Mempool'
+      graph_items:
+        - drawtype: FILLED_REGION
+          color: 199C0D
+          calc_fnc: ALL
+          item:
+            host: 'bitcoind by Zabbix agent active'
+            key: bitcoin.mempool.usage_bytes
+        - sortorder: '1'
+          color: FF0000
+          calc_fnc: ALL
+          item:
+            host: 'bitcoind by Zabbix agent active'
+            key: bitcoin.mempool.size_vbytes
+        - sortorder: '2'
+          color: 2774A4
+          yaxisside: RIGHT
+          calc_fnc: ALL
+          item:
+            host: 'bitcoind by Zabbix agent active'
+            key: bitcoin.mempool.tx_count
+        - sortorder: '3'
+          drawtype: BOLD_LINE
+          color: F63100
+          calc_fnc: ALL
+          item:
+            host: 'bitcoind by Zabbix agent active'
+            key: bitcoin.mempool.maxmempool_bytes
+    - uuid: dafcc9ee1c3a4c53a4670219c9366267
+      name: 'Bitcoin: Node connections'
+      graph_items:
+        - drawtype: FILLED_REGION
+          color: 199C0D
+          calc_fnc: MIN
+          item:
+            host: 'bitcoind by Zabbix agent active'
+            key: bitcoin.connections.num
+        - sortorder: '1'
+          color: F63100
+          calc_fnc: MIN
+          item:
+            host: 'bitcoind by Zabbix agent active'
+            key: bitcoin.connections_in.num
+        - sortorder: '2'
+          color: 2774A4
+          calc_fnc: MIN
+          item:
+            host: 'bitcoind by Zabbix agent active'
+            key: bitcoin.connections_out.num
