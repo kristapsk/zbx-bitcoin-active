@@ -43,9 +43,9 @@ Verify key is loaded:
 
     zabbix_agentd -p | grep bitcoin.status
 
-Restart agent (Void Linux / runit example):
+Restart agent (Debian / Ubuntu systemd example):
 
-    sv restart zabbix-agentd
+    sudo systemctl restart zabbix-agent
 
 Test locally:
 
