@@ -735,6 +735,137 @@ zabbix_export:
               name: 'Bitcoin: Server version has changed'
               priority: INFO
               manual_close: 'YES'
+        - uuid: 6b9f5f0f7d6b4df4b2e8b1d3d0d4a9a1
+          name: 'Bitcoin: Header / block gap'
+          type: DEPENDENT
+          key: bitcoin.blockchain.header_gap
+          value_type: FLOAT
+          master_item:
+            key: bitcoin.status
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.blockchain.header_gap
+        - uuid: 1c8aa9f5e4a44f3ca6d7f1a9d2e6c0b2
+          name: 'Bitcoin: Best block age'
+          type: DEPENDENT
+          key: bitcoin.blockchain.bestblockage
+          units: s
+          master_item:
+            key: bitcoin.status
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.blockchain.bestblockage
+        - uuid: e2b6c95f4d1c4d0f8a3a7e6b2c9d1f44
+          name: 'Bitcoin: Difficulty'
+          type: DEPENDENT
+          key: bitcoin.blockchain.difficulty
+          value_type: FLOAT
+          master_item:
+            key: bitcoin.status
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.blockchain.difficulty
+        - uuid: 5f0b8e2a9c7d4f3e8b1a6d2c4e9f7a10
+          name: 'Bitcoin: Network hash rate'
+          type: DEPENDENT
+          key: bitcoin.network.hashrate
+          units: H/s
+          value_type: FLOAT
+          master_item:
+            key: bitcoin.status
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.network.networkhashps
+        - uuid: 9d4e1a7c3f6b4b2aa8c5d1e7f0a9b632
+          name: 'Bitcoin: P2P bytes received'
+          type: DEPENDENT
+          key: bitcoin.network.totalbytesrecv
+          units: B
+          master_item:
+            key: bitcoin.status
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.network.totalbytesrecv
+        - uuid: 2a7e4c9d1b5f43c8a6d0e2f9b1c7a354
+          name: 'Bitcoin: P2P bytes sent'
+          type: DEPENDENT
+          key: bitcoin.network.totalbytessent
+          units: B
+          master_item:
+            key: bitcoin.status
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.network.totalbytessent
+        - uuid: a4c8f1e92d6b4a7f8c3d0e1b5f9a2c67
+          name: 'Bitcoin: Mempool usage'
+          type: DEPENDENT
+          key: bitcoin.mempool.usage_percent
+          units: '%'
+          value_type: FLOAT
+          master_item:
+            key: bitcoin.status
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.mempool.usage_percent
+        - uuid: f1b7c3d9a6e24f0c8b5d1a7e9c2f4b68
+          name: 'Bitcoin: Peers total'
+          type: DEPENDENT
+          key: bitcoin.peers.total
+          master_item:
+            key: bitcoin.status
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.peers.total
+        - uuid: 3e9a1c7d5b4f48c2a6d0e8f1b7c9a254
+          name: 'Bitcoin: IPv4 peers'
+          type: DEPENDENT
+          key: bitcoin.peers.ipv4
+          master_item:
+            key: bitcoin.status
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.peers.ipv4
+        - uuid: 7c2d9a4f1e6b43b8a5d0f1c9e2a7b364
+          name: 'Bitcoin: IPv6 peers'
+          type: DEPENDENT
+          key: bitcoin.peers.ipv6
+          master_item:
+            key: bitcoin.status
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.peers.ipv6
+        - uuid: b6d1e8f3a9c44b2f8d5a0e1c7f2b9a43
+          name: 'Bitcoin: Onion peers'
+          type: DEPENDENT
+          key: bitcoin.peers.onion
+          master_item:
+            key: bitcoin.status
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.peers.onion
+        - uuid: c9f2a7e1d4b64c3f8a5d0b1e7c9a2f56
+          name: 'Bitcoin: Average peer ping'
+          type: DEPENDENT
+          key: bitcoin.peers.avg_ping
+          units: s
+          value_type: FLOAT
+          master_item:
+            key: bitcoin.status
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.peers.avg_ping
       tags:
         - tag: class
           value: software
@@ -746,7 +877,7 @@ zabbix_export:
           pages:
             - widgets:
                 - type: graph
-                  width: '36'
+                  width: '24'
                   height: '5'
                   fields:
                     - type: GRAPH
@@ -756,23 +887,10 @@ zabbix_export:
                         name: 'Bitcoin: Blockchain'
                     - type: STRING
                       name: reference
-                      value: HKMFW
+                      value: CHAIN
                 - type: graph
-                  'y': '5'
-                  width: '36'
-                  height: '5'
-                  fields:
-                    - type: GRAPH
-                      name: graphid.0
-                      value:
-                        host: 'bitcoind by Zabbix agent active'
-                        name: 'Bitcoin: Node connections'
-                    - type: STRING
-                      name: reference
-                      value: PUTBS
-                - type: graph
-                  x: '36'
-                  width: '36'
+                  x: '24'
+                  width: '24'
                   height: '5'
                   fields:
                     - type: GRAPH
@@ -782,7 +900,61 @@ zabbix_export:
                         name: 'Bitcoin: Mempool'
                     - type: STRING
                       name: reference
-                      value: RYKPU
+                      value: MEMPOOL
+                - type: graph
+                  x: '48'
+                  width: '24'
+                  height: '5'
+                  fields:
+                    - type: GRAPH
+                      name: graphid.0
+                      value:
+                        host: 'bitcoind by Zabbix agent active'
+                        name: 'Bitcoin: Peer composition'
+                    - type: STRING
+                      name: reference
+                      value: PEERS
+                - type: graph
+                  y: '5'
+                  width: '24'
+                  height: '5'
+                  fields:
+                    - type: GRAPH
+                      name: graphid.0
+                      value:
+                        host: 'bitcoind by Zabbix agent active'
+                        name: 'Bitcoin: Node connections'
+                    - type: STRING
+                      name: reference
+                      value: CONNECTIONS
+                - type: graph
+                  x: '24'
+                  y: '5'
+                  width: '24'
+                  height: '5'
+                  fields:
+                    - type: GRAPH
+                      name: graphid.0
+                      value:
+                        host: 'bitcoind by Zabbix agent active'
+                        name: 'Bitcoin: Chain health'
+                    - type: STRING
+                      name: reference
+                      value: HEALTH
+                - type: graph
+                  x: '48'
+                  y: '5'
+                  width: '24'
+                  height: '5'
+                  fields:
+                    - type: GRAPH
+                      name: graphid.0
+                      value:
+                        host: 'bitcoind by Zabbix agent active'
+                        name: 'Bitcoin: Node quality'
+                    - type: STRING
+                      name: reference
+                      value: QUALITY
   graphs:
     - uuid: 84af45ca2ebf4d06bc7bd21eb8365e2e
       name: 'Bitcoin: Blockchain'
@@ -851,3 +1023,62 @@ zabbix_export:
           item:
             host: 'bitcoind by Zabbix agent active'
             key: bitcoin.connections_out.num
+    - uuid: 2f41e8e3aab3497fa7b9b1c8d55d6a91
+      name: 'Bitcoin: Chain health'
+      graph_items:
+        - color: F63100
+          calc_fnc: MAX
+          item:
+            host: 'bitcoind by Zabbix agent active'
+            key: bitcoin.blockchain.bestblockage
+        - sortorder: '1'
+          color: 2774A4
+          yaxisside: RIGHT
+          calc_fnc: MAX
+          item:
+            host: 'bitcoind by Zabbix agent active'
+            key: bitcoin.blockchain.header_gap
+    - uuid: 0f3f1c9b45e04648a1c3b6bba9a7c6c2
+      name: 'Bitcoin: Peer composition'
+      graph_items:
+        - drawtype: FILLED_REGION
+          color: 199C0D
+          calc_fnc: MIN
+          item:
+            host: 'bitcoind by Zabbix agent active'
+            key: bitcoin.peers.total
+        - sortorder: '1'
+          color: F63100
+          calc_fnc: MIN
+          item:
+            host: 'bitcoind by Zabbix agent active'
+            key: bitcoin.peers.ipv4
+        - sortorder: '2'
+          color: 2774A4
+          calc_fnc: MIN
+          item:
+            host: 'bitcoind by Zabbix agent active'
+            key: bitcoin.peers.ipv6
+        - sortorder: '3'
+          color: FF00CC
+          calc_fnc: MIN
+          item:
+            host: 'bitcoind by Zabbix agent active'
+            key: bitcoin.peers.onion
+    - uuid: 7f82dba1a0c94c2c9e8c7e0a5e3c4d18
+      name: 'Bitcoin: Node quality'
+      percent_right: '100'
+      graph_items:
+        - drawtype: BOLD_LINE
+          color: 00BFFF
+          calc_fnc: AVG
+          item:
+            host: 'bitcoind by Zabbix agent active'
+            key: bitcoin.peers.avg_ping
+        - sortorder: '1'
+          color: F7941D
+          yaxisside: RIGHT
+          calc_fnc: AVG
+          item:
+            host: 'bitcoind by Zabbix agent active'
+            key: bitcoin.mempool.usage_percent
