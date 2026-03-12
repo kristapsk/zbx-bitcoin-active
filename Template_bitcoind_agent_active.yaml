@@ -746,6 +746,16 @@ zabbix_export:
                 - $.peers.avg_ping
           master_item:
             key: bitcoin.status
+        - uuid: e5fa1cd71bd2456faaade805ab2a69ff
+          name: 'Bitcoin: I2P peers'
+          type: DEPENDENT
+          key: bitcoin.peers.i2p
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.peers.i2p
+          master_item:
+            key: bitcoin.status
         - uuid: 3e9a1c7d5b4f48c2a6d0e8f1b7c9a254
           name: 'Bitcoin: IPv4 peers'
           type: DEPENDENT
@@ -1080,3 +1090,9 @@ zabbix_export:
           item:
             host: 'bitcoind by Zabbix agent active'
             key: bitcoin.peers.onion
+        - sortorder: '4'
+          color: F7941D
+          calc_fnc: MIN
+          item:
+            host: 'bitcoind by Zabbix agent active'
+            key: bitcoin.peers.i2p
