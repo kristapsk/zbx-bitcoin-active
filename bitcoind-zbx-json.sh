@@ -3,13 +3,24 @@ set -euo pipefail
 
 bitcoin_cli="bitcoin-cli"
 bitcoin_cli_options=""
+GBT_MONITOR="0"
 
-# allow passing bitcoin-cli flags (same pattern you already use)
-while (( ${#} > 0 )) && [[ ${1:0:1} == "-" ]]; do
+# allow passing bitcoin-cli flags
+while (( ${#} > 0 )) && [[ "$1" != "--" ]]; do
   bitcoin_cli_options="$bitcoin_cli_options $1"
   shift
 done
+
+if [[ "${1:-}" == "--" ]]; then
+  shift
+fi
+
 bitcoin_cli="$bitcoin_cli $bitcoin_cli_options"
+
+# optional argument after flags: enable getblocktemplate monitoring (0/1)
+if (( ${#} > 0 )); then
+  GBT_MONITOR="$1"
+fi
 
 # helper: convert BTC/kvB feerate to sat/vB and avoid scientific notation
 btc_kvb_to_sat_vb() {
@@ -102,6 +113,48 @@ peer_seen_24h="$(jq -r '
   [ .[] | select(((.lastrecv // 0) > (now - 86400)) or ((.lastsend // 0) > (now - 86400))) ] | length
 ' <<<"$peer_info")"
 
+# getblocktemplate monitoring (optional; intended for mining pools / miners)
+gbt_latency_ms="0"
+gbt_tx_count="0"
+gbt_error="0"
+gbt_tip_match="1"
+gbt_age="0"
+
+# detect if nanoseconds are supported
+if date +%s%N >/dev/null 2>&1 && [[ "$(date +%s%N)" =~ ^[0-9]+$ ]]; then
+  now_ns() { date +%s%N; }
+else
+  now_ns() { echo $(( $(date +%s) * 1000000000 )); }
+fi
+
+if [[ "$GBT_MONITOR" == "1" ]]; then
+  gbt_start_ns="$(now_ns)"
+  gbt_json="$($bitcoin_cli getblocktemplate '{"rules":["segwit"]}' 2>/dev/null || true)"
+  gbt_end_ns="$(now_ns)"
+  gbt_end_ts="$(( gbt_end_ns / 1000000000 ))"
+
+  if [[ -n "$gbt_json" ]] && jq -e . >/dev/null 2>&1 <<<"$gbt_json"; then
+    gbt_latency_ms="$(( (gbt_end_ns - gbt_start_ns) / 1000000 ))"
+    gbt_tx_count="$(jq -r '.transactions | length' <<<"$gbt_json")"
+    gbt_previousblockhash="$(jq -r '.previousblockhash // ""' <<<"$gbt_json")"
+    gbt_curtime="$(jq -r '.curtime // 0' <<<"$gbt_json")"
+
+    if [[ "$gbt_previousblockhash" == "$bestblockhash" ]]; then
+      gbt_tip_match="1"
+    else
+      gbt_tip_match="0"
+    fi
+
+    gbt_age="$(( gbt_end_ts - gbt_curtime ))"
+    if (( gbt_age < 0 )); then
+      gbt_age="0"
+    fi
+  else
+    gbt_error="1"
+    gbt_tip_match="0"
+  fi
+fi
+
 json="$(jq -n \
   --argjson blockchain "$blockchain_info" \
   --argjson network "$network_info" \
@@ -125,6 +178,11 @@ json="$(jq -n \
   --arg peer_max_conntime "$peer_max_conntime" \
   --arg peer_seen_1h "$peer_seen_1h" \
   --arg peer_seen_24h "$peer_seen_24h" \
+  --arg gbt_latency_ms "$gbt_latency_ms" \
+  --arg gbt_tx_count "$gbt_tx_count" \
+  --arg gbt_error "$gbt_error" \
+  --arg gbt_tip_match "$gbt_tip_match" \
+  --arg gbt_age "$gbt_age" \
   '{
     blockchain: {
       tip: {
@@ -174,6 +232,13 @@ json="$(jq -n \
     },
     rpc: {
       active_commands: ($rpc_active | tonumber)
+    },
+    mining: {
+      getblocktemplate_latency_ms: ($gbt_latency_ms | tonumber),
+      getblocktemplate_tx_count: ($gbt_tx_count | tonumber),
+      getblocktemplate_error: ($gbt_error | tonumber),
+      getblocktemplate_tip_match: ($gbt_tip_match | tonumber),
+      getblocktemplate_age: ($gbt_age | tonumber)
     }
   }'
 )"

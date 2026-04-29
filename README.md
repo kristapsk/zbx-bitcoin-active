@@ -23,11 +23,60 @@ Make it executable and accessible to the `zabbix` user:
     chmod +x /usr/local/bin/bitcoind-zbx-json.sh
     chown zabbix:zabbix /usr/local/bin/bitcoind-zbx-json.sh
 
-Test it manually:
+Test it manually (default, GBT monitoring disabled):
 
     sudo -u zabbix /usr/local/bin/bitcoind-zbx-json.sh | jq .
 
+Optional: enable getblocktemplate monitoring (for mining setups):
+
+    sudo -u zabbix /usr/local/bin/bitcoind-zbx-json.sh -- 1 | jq .
+
 It must output valid JSON.
+
+------------------------------------------------------------------------
+
+## Optional: getblocktemplate (GBT) Monitoring
+
+The script supports optional monitoring of `getblocktemplate`, useful for:
+
+- mining pools
+- solo miners
+- systems relying on block template freshness
+
+By default, this feature is **disabled** to avoid unnecessary RPC load.
+
+### Enable manually
+
+Run script with argument:
+
+    bitcoind-zbx-json.sh -- 1
+
+### Zabbix integration
+
+In the template, this is controlled via macro:
+
+    {$BITCOIN.GBT.MONITOR}
+
+Values:
+
+- `0` = disabled (default)
+- `1` = enabled
+
+### Metrics added
+
+When enabled, the following values are exported under the `mining` object in the JSON output:
+
+- `.mining.getblocktemplate_latency_ms` — RPC latency
+- `.mining.getblocktemplate_error` — RPC failure indicator
+- `.mining.getblocktemplate_tx_count` — transactions in template
+- `.mining.getblocktemplate_tip_match` — template built on current tip (1/0)
+- `.mining.getblocktemplate_age` — template age in seconds
+
+### Notes
+
+- This adds extra RPC load (~1 call per collection interval)
+- Recommended polling interval: >= 60 seconds
+- Not needed for standard full nodes
 
 ------------------------------------------------------------------------
 
@@ -35,13 +84,13 @@ It must output valid JSON.
 
 Add UserParameter to agent config (or included `.conf` file):
 
-    UserParameter=bitcoin.status,/usr/local/bin/bitcoind-zbx-json.sh
+    UserParameter=bitcoin.status[*],/usr/local/bin/bitcoind-zbx-json.sh -- "$1"
 
 Ensure it is inside the config file actually used by `zabbix_agentd`.
 
 Verify key is loaded:
 
-    zabbix_agentd -p | grep bitcoin.status
+    zabbix_agentd -p | grep bitcoin.status[0]
 
 Restart agent (Debian / Ubuntu systemd example):
 
@@ -49,7 +98,7 @@ Restart agent (Debian / Ubuntu systemd example):
 
 Test locally:
 
-    zabbix_agentd -t bitcoin.status
+    zabbix_agentd -t bitcoin.status[0]
 
 Expected:
 
@@ -90,7 +139,7 @@ Link template to host.
 
 Optional remote test:
 
-    zabbix_get -s <host_ip> -k bitcoin.status
+    zabbix_get -s <host_ip> -k bitcoin.status[0]
 
 ------------------------------------------------------------------------
 
@@ -114,4 +163,3 @@ Ensure `zabbix` user can:
 Test as:
 
     sudo -u zabbix bitcoin-cli getblockchaininfo
-
