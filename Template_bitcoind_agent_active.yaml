@@ -9,6 +9,10 @@ zabbix_export:
       name: 'bitcoind by Zabbix agent active'
       groups:
         - name: Templates/Applications
+      macros:
+        - macro: '{$BITCOIN.MEMPOOL.DROP.THRESHOLD}'
+          value: '50000'
+          description: 'Mempool transaction count drop threshold for anomaly alert.'
       items:
         - uuid: 1c8aa9f5e4a44f3ca6d7f1a9d2e6c0b2
           name: 'Bitcoin: Best block age'
@@ -96,6 +100,17 @@ zabbix_export:
             - type: MULTIPLIER
               parameters:
                 - '100'
+          master_item:
+            key: bitcoin.status
+        - uuid: 9b7e6f4c2a1d4c5f8e3b0a9d7c6f1254
+          name: 'Bitcoin: Initial block download'
+          type: DEPENDENT
+          key: bitcoin.blockchain.initialblockdownload
+          description: 'Indicates whether the node is currently in initial block download (1=yes, 0=no).'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.blockchain.initialblockdownload
           master_item:
             key: bitcoin.status
         - uuid: a7aff7709c2e4ccaa4a098141ad65baa
@@ -674,6 +689,19 @@ zabbix_export:
                 - $.mempool.tx_count
           master_item:
             key: bitcoin.status
+          triggers:
+            - uuid: 0f3f1c9b45e04648a1c3b6bba9a7c6c2
+              expression: 'last(/bitcoind by Zabbix agent active/bitcoin.mempool.tx_count)=0 and last(/bitcoind by Zabbix agent active/bitcoin.blockchain.initialblockdownload)=0'
+              name: 'Bitcoin: Mempool unexpectedly empty'
+              priority: WARNING
+              description: 'Mempool is empty while the node is fully synced and not in initial block download. This may indicate connectivity, policy, or mempool acceptance issues.'
+              manual_close: 'YES'
+            - uuid: 38d9b7a6c5e44f29a0318e2d6c0b7f94
+              expression: 'change(/bitcoind by Zabbix agent active/bitcoin.mempool.tx_count)<-{$BITCOIN.MEMPOOL.DROP.THRESHOLD}'
+              name: 'Bitcoin: Mempool transaction count dropped hard'
+              priority: WARNING
+              description: 'Mempool transaction count dropped by more than {$BITCOIN.MEMPOOL.DROP.THRESHOLD} between checks. This can happen after restart, eviction, block backlog clearing, or connectivity issues.'
+              manual_close: 'YES'
         - uuid: 02276a9f53a64115b2d63b34a6d814f7
           name: 'Bitcoin: Total memory usage for the mempool'
           type: DEPENDENT
